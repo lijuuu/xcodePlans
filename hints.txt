@@ -1,6 +1,8 @@
 References:
-*https://stanislas.blog/2021/08/firecracker/*
-*https://github.com/aws/aws-lambda-base-images?tab=readme-ov-file*
+https://stanislas.blog/2021/08/firecracker/
+https://github.dev/codebench-dev/agent
+https://github.com/codebench-dev/worker
+https://github.com/aws/aws-lambda-base-images?tab=readme-ov-file
 
 Use AWS Lambda method to reduce image size or 
 #!/bin/sh
