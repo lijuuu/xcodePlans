@@ -1,0 +1,54 @@
+References:
+*https://stanislas.blog/2021/08/firecracker/*
+*https://github.com/aws/aws-lambda-base-images?tab=readme-ov-file*
+
+Use AWS Lambda method to reduce image size or 
+#!/bin/sh
+
+# Core system setup
+apk add --no-cache openrc util-linux
+
+# Add only essential development tools
+apk add --no-cache \
+    gcc~=12.2 \
+    g++~=12.2 \
+    libc-dev~=0.7 \
+    python3~=3.11 \
+    go~=1.21
+
+# Remove unnecessary Python packages
+python3 -m pip uninstall -y pip setuptools
+
+# Configure system services
+ln -s agetty /etc/init.d/agetty.ttyS0
+echo ttyS0 >/etc/securetty
+rc-update add agetty.ttyS0 default
+
+# Basic system configuration
+echo "root:root" | chpasswd
+echo "nameserver 1.1.1.1" >>/etc/resolv.conf
+
+# Add codebench user
+addgroup -g 1000 -S codebench && adduser -u 1000 -S codebench -G codebench
+
+# Configure required services
+rc-update add devfs boot
+rc-update add procfs boot
+rc-update add sysfs boot
+rc-update add agent boot
+
+# Remove unnecessary files
+rm -rf /var/cache/apk/*
+rm -rf /root/.cache
+rm -rf /usr/share/man/*
+rm -rf /usr/share/doc/*
+rm -rf /tmp/*
+
+# Copy filesystem to target
+for d in bin etc lib root sbin usr; do tar c "/$d" | tar x -C /my-rootfs; done
+for dir in dev proc run sys var tmp; do mkdir /my-rootfs/${dir}; done
+
+chmod 1777 /my-rootfs/tmp
+mkdir -p /my-rootfs/home/codebench/
+chown 1000:1000 /my-rootfs/home/codebench/ 
+
